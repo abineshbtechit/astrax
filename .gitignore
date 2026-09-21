@@ -1,0 +1,69 @@
+# ===================================================================
+# Root .gitignore (Full Stack: React Vite + Java Spring Boot)
+# ===================================================================
+
+# Dependencies
+node_modules/
+*/node_modules/
+.pnp
+.pnp.js
+
+# Build Outputs
+dist/
+dist-ssr/
+build/
+*/build/
+target/
+*/target/
+out/
+bin/
+*.tsbuildinfo
+
+# Java Compiled & Package files
+*.class
+*.jar
+*.war
+*.ear
+!.mvn/wrapper/maven-wrapper.jar
+
+# Environment Variables & Sensitive Credentials
+.env
+.env.*
+*.env.local
+!.env.example
+secrets/
+*.pem
+*.key
+
+# Local Uploads & Storage
+storage/
+*/storage/
+uploads/
+*/uploads/
+tmp/
+temp/
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# IDE & Tooling
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.iml
+*.iws
+*.ipr
+.settings/
+.project
+.classpath
+.factorypath
+
+# OS Generated Files
+.DS_Store
+Thumbs.db
+Desktop.ini
