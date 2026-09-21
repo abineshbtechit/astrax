@@ -1,0 +1,77 @@
+spring:
+  application:
+    name: secure-investigation-dms
+
+  data:
+    mongodb:
+      # Full connection string for MongoDB Atlas (or local). Override via MONGODB_URI env.
+      # DUMMY VALUE - replace with your real MongoDB Atlas SRV URI later.
+      uri: ${MONGODB_URI:mongodb://localhost:27017/investigation_dms}
+      database: ${MONGODB_DATABASE:investigation_dms}
+      auto-index-creation: true
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: ${MAX_FILE_SIZE:25MB}
+      max-request-size: ${MAX_REQUEST_SIZE:30MB}
+
+server:
+  port: ${SERVER_PORT:8080}
+  error:
+    include-stacktrace: never
+    include-message: never
+
+# ---------------------------------------------------------------------------
+# Application-specific configuration. All secrets/URLs below are DUMMY defaults
+# meant to be overridden by environment variables / a secret manager in real use.
+# ---------------------------------------------------------------------------
+app:
+  jwt:
+    # DUMMY dev secret (>= 32 bytes for HS256). NEVER use this in production.
+    secret: ${JWT_SECRET:CHANGE_ME_dev_only_super_secret_key_min_32_bytes_1234567890}
+    expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+    issuer: ${JWT_ISSUER:secure-investigation-dms}
+
+  cors:
+    # Comma-separated list of allowed frontend origins.
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:3000}
+
+  storage:
+    local:
+      # Local dev storage root. Production should use encrypted object storage / GridFS.
+      root: ${STORAGE_LOCAL_ROOT:./storage}
+
+  documents:
+    allowed-extensions: ${ALLOWED_EXTENSIONS:pdf,doc,docx,jpg,jpeg,png,txt}
+    max-file-size: ${DOC_MAX_FILE_SIZE:26214400}
+
+  seed:
+    # When true, seeds dummy departments + an admin user on first startup (dev only).
+    enabled: ${SEED_ENABLED:true}
+    admin-username: ${SEED_ADMIN_USERNAME:admin}
+    admin-email: ${SEED_ADMIN_EMAIL:admin@example.com}
+    admin-password: ${SEED_ADMIN_PASSWORD:Admin@12345}
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
+
+logging:
+  level:
+    root: INFO
+    com.investigation.dms: INFO
+    org.springframework.data.mongodb: WARN

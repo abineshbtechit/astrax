@@ -1,0 +1,30 @@
+de:
+  flapdoodle:
+    mongodb:
+      embedded:
+        version: 6.0.8
+
+spring:
+  data:
+    mongodb:
+      # Embedded MongoDB (flapdoodle) is auto-configured for tests; database name only.
+      database: investigation_dms_test
+      auto-index-creation: true
+
+app:
+  jwt:
+    secret: test_only_secret_key_at_least_32_bytes_long_1234567890
+    expiration-ms: 3600000
+    issuer: test-issuer
+  cors:
+    allowed-origins: http://localhost:5173
+  storage:
+    local:
+      root: ./build/test-storage
+  seed:
+    enabled: false
+
+logging:
+  level:
+    org.springframework.data.mongodb: WARN
+    de.flapdoodle: WARN
