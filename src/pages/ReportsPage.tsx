@@ -8,7 +8,10 @@ import {
   Scale,
   CheckCircle2,
   PenTool,
+  Bot,
+  Sparkles,
 } from 'lucide-react';
+import { triggerAiChat } from '../components/layout/AppLayout';
 
 export const ReportsPage: React.FC = () => {
   const { cases, documents, evidence, currentUser } = useDms();
@@ -40,6 +43,23 @@ export const ReportsPage: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              const currentCase = cases.find((c) => c.id === selectedCaseId);
+              const firstDoc = caseDocs[0];
+              triggerAiChat(
+                firstDoc,
+                `Provide an executive legal dossier summary for Case ${currentCase?.caseNumber || ''} ("${currentCase?.title || ''}"). Summarize all ${caseDocs.length} vaulted documents and ${caseEvidence.length} evidence items.`
+              );
+            }}
+            className="px-4 py-2 rounded-xl bg-black text-[#64EE00] hover:bg-neutral-800 font-mono font-bold text-xs flex items-center gap-1.5 border-2 border-black shadow-[2px_2px_0px_#000000] cursor-pointer"
+            title="Summarize Case Dossier with Azure AI Agent"
+          >
+            <Bot className="w-4 h-4 stroke-[2.5]" />
+            <span>AI Executive Brief</span>
+            <Sparkles className="w-3.5 h-3.5 text-[#64EE00]" />
+          </button>
+
           <button
             onClick={handlePrint}
             className="brutal-btn-green px-4 py-2 rounded-xl font-mono font-bold text-xs flex items-center gap-1.5"

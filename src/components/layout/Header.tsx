@@ -13,8 +13,11 @@ import {
   LogOut,
   Sliders,
   Check,
+  Bot,
+  Sparkles,
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+import { triggerAiChat } from './AppLayout';
 
 export const Header: React.FC<{ onOpenSearch: () => void }> = ({ onOpenSearch }) => {
   const { currentUser, users, switchUser, notifications, markNotificationRead, markAllNotificationsRead, alerts, logout, mongoStatus } = useDms();
@@ -85,6 +88,17 @@ export const Header: React.FC<{ onOpenSearch: () => void }> = ({ onOpenSearch })
           <KeyRound className="w-3.5 h-3.5 text-indigo-400" />
           <span>MFA: {currentUser?.mfaEnabled ? 'ENFORCED' : 'OPTIONAL'}</span>
         </Link>
+
+        {/* Azure AI Agent Chatbot Trigger */}
+        <button
+          onClick={() => triggerAiChat()}
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-mono font-bold bg-[#64EE00]/10 text-[#64EE00] border border-[#64EE00]/40 hover:bg-[#64EE00]/20 transition cursor-pointer"
+          title="Open Azure AI Chatbot (hungry-agent-gx98rcf3rx)"
+        >
+          <Bot className="w-3.5 h-3.5 text-[#64EE00]" />
+          <span>AI AGENT</span>
+          <span className="w-1.5 h-1.5 rounded-full bg-[#64EE00] animate-pulse" />
+        </button>
 
         {/* Notifications Popover */}
         <div className="relative">

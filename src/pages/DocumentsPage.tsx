@@ -16,12 +16,15 @@ import {
   PenTool,
   Clock,
   Check,
+  Bot,
+  Sparkles,
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ClassificationBadge, IntegrityBadge, WorkflowBadge } from '../components/ui/Badges';
 import { UploadDocumentModal } from '../components/modals/UploadDocumentModal';
 import { RequestAccessModal } from '../components/modals/RequestAccessModal';
 import { Classification, Department, DocumentItem, WorkflowStatus } from '../types';
+import { triggerAiChat } from '../components/layout/AppLayout';
 
 export const DocumentsPage: React.FC = () => {
   const { documents, accessRequests, evaluateDocumentAccess, currentUser } = useDms();
@@ -69,13 +72,25 @@ export const DocumentsPage: React.FC = () => {
           </p>
         </div>
 
-        <button
-          onClick={() => setIsUploadOpen(true)}
-          className="brutal-btn-green px-4 py-2.5 rounded-xl text-xs font-mono uppercase tracking-wider flex items-center gap-2"
-        >
-          <Upload className="w-4 h-4 text-black stroke-[3]" />
-          <span>Upload Document</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => triggerAiChat()}
+            className="px-4 py-2.5 rounded-xl text-xs font-mono uppercase tracking-wider flex items-center gap-2 bg-black text-[#64EE00] hover:bg-neutral-800 border-2 border-black shadow-[2px_2px_0px_#000000] cursor-pointer"
+            title="Open Azure AI Chatbot"
+          >
+            <Bot className="w-4 h-4 stroke-[2.5]" />
+            <span>AI Assistant</span>
+            <Sparkles className="w-3.5 h-3.5 text-[#64EE00]" />
+          </button>
+
+          <button
+            onClick={() => setIsUploadOpen(true)}
+            className="brutal-btn-green px-4 py-2.5 rounded-xl text-xs font-mono uppercase tracking-wider flex items-center gap-2"
+          >
+            <Upload className="w-4 h-4 text-black stroke-[3]" />
+            <span>Upload Document</span>
+          </button>
+        </div>
       </div>
 
       {/* Unified Tab Selector */}

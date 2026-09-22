@@ -1,5 +1,6 @@
 import express from 'express';
 import path from 'path';
+import { spawn } from 'child_process';
 import dotenv from 'dotenv';
 import { createServer as createViteServer } from 'vite';
 import { getDb, isDbConnected, getDbDiagnostics, setCustomMongoUri } from './server/db.js';
@@ -345,6 +346,118 @@ app.post('/api/seed', async (req, res) => {
     }
 
     res.json({ success: true, message: 'Database successfully seeded with legal investigation records.' });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Azure AI Agent Endpoints (Azure AI Foundry gpt-5-mini & hungry-agent)
+app.get('/api/ai/status', (req, res) => {
+  res.json({
+    status: 'ok',
+    modelName: process.env.AZURE_AI_MODEL || 'gpt-5-mini',
+    agentName: process.env.AZURE_AI_AGENT_NAME || 'gpt-5-mini',
+    agentVersion: process.env.AZURE_AI_AGENT_VERSION || '2025-08-07',
+    endpoint: process.env.AZURE_AI_ENDPOINT || 'https://abineshas-6866-resource.services.ai.azure.com/api/projects/abineshas-6866',
+    hasApiKey: Boolean(process.env.AZURE_AI_API_KEY || process.env.AZURE_OPENAI_API_KEY),
+  });
+});
+
+app.post('/api/ai/configure', (req, res) => {
+  const { apiKey } = req.body;
+  if (apiKey) {
+    process.env.AZURE_AI_API_KEY = apiKey.trim();
+  }
+  res.json({
+    success: true,
+    hasApiKey: Boolean(process.env.AZURE_AI_API_KEY),
+    message: 'Azure AI API Key updated in server session',
+  });
+});
+
+app.post('/api/ai/chat', async (req, res) => {
+  try {
+    const inputData = {
+      ...req.body,
+      apiKey: req.body.apiKey || process.env.AZURE_AI_API_KEY || process.env.AZURE_OPENAI_API_KEY || '',
+    };
+
+    const pythonScript = path.join(process.cwd(), 'server', 'azure_ai_agent.py');
+    const child = spawn('python', [pythonScript]);
+
+    let stdoutData = '';
+    let stderrData = '';
+
+    child.stdout.on('data', (data) => {
+      stdoutData += data.toString();
+    });
+
+    child.stderr.on('data', (data) => {
+      stderrData += data.toString();
+    });
+
+    child.on('close', (code) => {
+      try {
+        if (!stdoutData.trim()) {
+          return res.status(500).json({
+            error: 'Empty response from Azure AI agent bridge',
+            details: stderrData,
+          });
+        }
+        const jsonRes = JSON.parse(stdoutData.trim());
+        res.json(jsonRes);
+      } catch (err: any) {
+        res.status(500).json({
+          error: 'Failed to parse Azure AI response',
+          rawOutput: stdoutData,
+          stderr: stderrData,
+        });
+      }
+    });
+
+    child.stdin.write(JSON.stringify(inputData));
+    child.stdin.end();
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/ai/extract-pdf', async (req, res) => {
+  try {
+    const { pdfBase64, filename } = req.body;
+    if (!pdfBase64) {
+      return res.status(400).json({ error: 'Missing pdfBase64 data' });
+    }
+
+    const pythonScript = path.join(process.cwd(), 'server', 'azure_ai_agent.py');
+    const child = spawn('python', [pythonScript]);
+
+    let stdoutData = '';
+    let stderrData = '';
+
+    child.stdout.on('data', (data) => {
+      stdoutData += data.toString();
+    });
+
+    child.stderr.on('data', (data) => {
+      stderrData += data.toString();
+    });
+
+    child.on('close', (code) => {
+      try {
+        const jsonRes = JSON.parse(stdoutData.trim());
+        res.json(jsonRes);
+      } catch (err: any) {
+        res.status(500).json({
+          error: 'Failed to parse PDF extract output',
+          rawOutput: stdoutData,
+          stderr: stderrData,
+        });
+      }
+    });
+
+    child.stdin.write(JSON.stringify({ mode: 'extract_pdf', pdfBase64, filename }));
+    child.stdin.end();
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
