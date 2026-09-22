@@ -1,0 +1,6 @@
+{
+  "name": "AstraX - Secure Legal & Evidentiary DMS",
+  "description": "Multi-department investigation and confidential legal document management system with role-based access control, cryptographic SHA-256 integrity, chain of custody, and chained audit compliance.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
