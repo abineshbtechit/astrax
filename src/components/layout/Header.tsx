@@ -207,38 +207,6 @@ export const Header: React.FC<{ onOpenSearch: () => void }> = ({ onOpenSearch })
                 </div>
               </div>
 
-              {/* Department Persona Switcher */}
-              <div className="p-2">
-                <div className="px-2 py-1 text-[11px] font-mono text-slate-400 font-semibold flex items-center justify-between">
-                  <span>SWITCH DEPARTMENT PERSONA</span>
-                  <span className="text-[10px] text-cyan-400">TEST ACL</span>
-                </div>
-                <div className="space-y-1 mt-1 max-h-56 overflow-y-auto">
-                  {users.map((u) => {
-                    const isSelected = u.id === currentUser?.id;
-                    return (
-                      <button
-                        key={u.id}
-                        onClick={() => {
-                          switchUser(u.id);
-                          setShowUserMenu(false);
-                        }}
-                        className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs flex items-center justify-between transition ${
-                          isSelected
-                            ? 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 font-medium'
-                            : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                        }`}
-                      >
-                        <div className="truncate mr-2">
-                          <div className="font-medium truncate">{u.fullName}</div>
-                          <div className="text-[10px] font-mono text-slate-400">
-                            {u.department} — {u.role}
-                          </div>
-                        </div>
-                        {isSelected && <Check className="w-3.5 h-3.5 text-cyan-400 flex-shrink-0" />}
-                      </button>
-                    );
-                  })}
                 </div>
               </div>
 
@@ -264,6 +232,7 @@ export const Header: React.FC<{ onOpenSearch: () => void }> = ({ onOpenSearch })
                   onClick={() => {
                     logout();
                     setShowUserMenu(false);
+                    navigate('/login');
                   }}
                   className="w-full flex items-center gap-2 px-2.5 py-1.5 text-xs text-rose-400 hover:bg-rose-500/10 rounded-lg transition mt-0.5"
                 >

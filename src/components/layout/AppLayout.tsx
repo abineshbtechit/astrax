@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, Navigate } from 'react-router-dom';
+import { useDms } from '../../contexts/DmsContext';
 import { Sidebar } from './Sidebar';
 import { GlobalSearchModal } from '../modals/GlobalSearchModal';
 import { QuickActionModal } from '../modals/QuickActionModal';
@@ -12,6 +13,7 @@ export const triggerAiChat = (doc?: DocumentItem, prompt?: string) => {
 };
 
 export const AppLayout: React.FC = () => {
+  const { currentUser } = useDms();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isQuickActionOpen, setIsQuickActionOpen] = useState(false);
   const [isAiChatOpen, setIsAiChatOpen] = useState(false);
@@ -28,6 +30,10 @@ export const AppLayout: React.FC = () => {
     window.addEventListener('astrax:open-ai-chat', handler);
     return () => window.removeEventListener('astrax:open-ai-chat', handler);
   }, []);
+
+  if (!currentUser) {
+    return <Navigate to="/login" replace />;
+  }
 
   return (
     <div className="min-h-screen bg-[#F2F4F7] text-[#0A0D14] flex relative selection:bg-[#64EE00] selection:text-black">

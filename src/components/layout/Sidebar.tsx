@@ -8,7 +8,8 @@ import {
   SlidersHorizontal,
   Search,
   Plus,
-  UserCheck,
+  LogOut,
+  Users,
   Bot,
   Sparkles,
 } from 'lucide-react';
@@ -22,13 +23,12 @@ interface SidebarProps {
 
 export const Sidebar: React.FC<SidebarProps> = ({ onOpenSearch, onOpenQuickAction, onOpenAiChat }) => {
   const [isHovered, setIsHovered] = useState(false);
-  const [showUserDropdown, setShowUserDropdown] = useState(false);
-  const { currentUser, users, switchUser, alerts, documents, mongoStatus } = useDms();
+  const { currentUser, logout, alerts, documents, mongoStatus } = useDms();
 
   const activeAlertsCount = alerts.filter((a) => a.status === 'ACTIVE').length;
   const tamperedDocsCount = documents.filter((d) => d.tamperState === 'TAMPERED').length;
 
-  // Streamlined 5 core navigation hubs with professional security icons
+  // Navigation hubs with professional security icons
   const navItems = [
     {
       id: 'dashboard',
@@ -50,21 +50,30 @@ export const Sidebar: React.FC<SidebarProps> = ({ onOpenSearch, onOpenQuickActio
       subtitle: 'Section 65B & Hashes',
       path: '/documents',
       icon: FileLock2,
-      badge: tamperedDocsCount > 0 ? `${tamperedDocsCount} ERR` : undefined,
-      badgeColor: 'bg-black text-[#64EE00] border border-[#64EE00]',
     },
+    ...(currentUser?.role === 'ADMIN'
+      ? [
+          {
+            id: 'users',
+            label: 'Personnel & Users',
+            subtitle: 'Accreditation & Roster',
+            path: '/users',
+            icon: Users,
+          },
+        ]
+      : []),
     {
-      id: 'integrity',
+      id: 'integrity-lab',
       label: 'Integrity & Audits',
       subtitle: 'SHA-256 Bitstream',
       path: '/integrity-lab',
       icon: Binary,
-      badge: activeAlertsCount > 0 ? `${activeAlertsCount}` : undefined,
-      badgeColor: 'bg-[#64EE00] text-black font-bold',
+      badge: tamperedDocsCount > 0 ? `${tamperedDocsCount}` : activeAlertsCount > 0 ? `${activeAlertsCount}` : undefined,
+      badgeColor: tamperedDocsCount > 0 ? 'bg-red-500 text-white' : 'bg-[#64EE00] text-black font-black',
     },
     {
       id: 'settings',
-      label: 'Settings & Security',
+      label: 'Security & Config',
       subtitle: 'Atlas DB & Policies',
       path: '/settings',
       icon: SlidersHorizontal,
@@ -74,10 +83,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onOpenSearch, onOpenQuickActio
   return (
     <aside
       onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => {
-        setIsHovered(false);
-        setShowUserDropdown(false);
-      }}
+      onMouseLeave={() => setIsHovered(false)}
       className={`fixed top-0 left-0 h-screen z-50 transition-all duration-300 ease-in-out flex flex-col justify-between py-5 px-3 select-none ${
         isHovered
           ? 'w-64 bg-black/95 backdrop-blur-2xl border-r-2 border-black shadow-[8px_0px_24px_rgba(0,0,0,0.35)]'
@@ -299,12 +305,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ onOpenSearch, onOpenQuickActio
           </div>
         </div>
 
-        {/* User Account / Persona Switcher Trigger */}
-        <div className="w-full relative">
-          <button
-            onClick={() => setShowUserDropdown(!showUserDropdown)}
-            className="flex items-center gap-2.5 w-full p-1.5 rounded-xl border border-white/20 bg-white/5 hover:bg-white/15 transition text-left group"
-            title="Switch User Role / Identity"
+        {/* User Account & Sign Out */}
+        <div className="w-full space-y-2">
+          <div
+            className="w-full flex items-center gap-2 p-1.5 rounded-xl border border-white/20 bg-white/5 text-left transition"
+            title="Authenticated Enclave Officer"
           >
             <div className="w-8 h-8 min-w-[32px] rounded-lg bg-white border border-black flex items-center justify-center text-xs font-mono font-black text-black">
               {currentUser ? currentUser.fullName.substring(0, 2).toUpperCase() : 'AX'}
@@ -322,42 +327,22 @@ export const Sidebar: React.FC<SidebarProps> = ({ onOpenSearch, onOpenQuickActio
                 {currentUser?.role.replace('_', ' ')} &bull; {currentUser?.department}
               </span>
             </div>
-          </button>
+          </div>
 
-          {/* Quick Persona Switcher Dropdown */}
-          {showUserDropdown && (
-            <div className="absolute bottom-12 left-0 w-64 bg-black border-2 border-[#64EE00] shadow-[6px_6px_0px_#000000] rounded-xl p-2 z-50 text-white animate-in fade-in zoom-in-95">
-              <div className="px-2 py-1.5 border-b border-white/20 text-[10px] font-mono font-bold text-[#64EE00] uppercase">
-                Switch Enclave Persona
-              </div>
-              <div className="max-h-48 overflow-y-auto mt-1 space-y-1">
-                {users.map((u) => (
-                  <button
-                    key={u.id}
-                    onClick={() => {
-                      switchUser(u.id);
-                      setShowUserDropdown(false);
-                    }}
-                    className={`w-full text-left p-2 rounded-lg text-xs flex items-center justify-between transition ${
-                      currentUser?.id === u.id
-                        ? 'bg-[#64EE00] text-black font-black'
-                        : 'hover:bg-white/10 text-white font-bold'
-                    }`}
-                  >
-                    <div className="truncate">
-                      <div className="font-bold">{u.fullName}</div>
-                      <div className="text-[9px] font-mono opacity-80">
-                        {u.role} ({u.department})
-                      </div>
-                    </div>
-                    {currentUser?.id === u.id && (
-                      <UserCheck className="w-3.5 h-3.5 text-black min-w-[14px] stroke-[3]" />
-                    )}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
+          <button
+            onClick={() => logout()}
+            className="w-full flex items-center gap-2 p-2 rounded-xl bg-red-500 text-white hover:bg-red-600 border border-red-500/40 text-left transition font-mono text-xs font-bold"
+            title="Sign Out Session"
+          >
+            <LogOut className="w-4 h-4 min-w-[16px] stroke-[2.5]" />
+            <span
+              className={`transition-all duration-300 whitespace-nowrap truncate ${
+                isHovered ? 'opacity-100 max-w-[140px]' : 'opacity-0 max-w-0 pointer-events-none'
+              }`}
+            >
+              Sign Out Session
+            </span>
+          </button>
         </div>
       </div>
     </aside>
