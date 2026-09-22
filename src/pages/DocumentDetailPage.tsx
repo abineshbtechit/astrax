@@ -20,11 +20,14 @@ import {
   RefreshCw,
   FileLock2,
   Binary,
+  Bot,
+  Sparkles,
 } from 'lucide-react';
 import { ClassificationBadge, IntegrityBadge, WorkflowBadge } from '../components/ui/Badges';
 import { UploadVersionModal } from '../components/modals/UploadVersionModal';
 import { RequestAccessModal } from '../components/modals/RequestAccessModal';
 import { GrantAccessModal } from '../components/modals/GrantAccessModal';
+import { triggerAiChat } from '../components/layout/AppLayout';
 
 export const DocumentDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -175,6 +178,21 @@ export const DocumentDetailPage: React.FC = () => {
 
           {/* Action Buttons */}
           <div className="flex items-center gap-2 flex-wrap">
+            {/* Azure AI Summarize & Analyze */}
+            <button
+              onClick={() =>
+                triggerAiChat(
+                  doc,
+                  `Provide a comprehensive executive evidentiary summary for document "${doc.documentName}". Extract key findings, Section 65B compliance, suspect mentions, and statutory penal codes.`
+                )
+              }
+              className="px-3.5 py-2 rounded-xl bg-[#64EE00] text-black hover:bg-white font-mono font-black text-xs flex items-center gap-1.5 transition border-2 border-black shadow-[2px_2px_0px_#000000] cursor-pointer"
+              title="Summarize with Azure AI Agent (hungry-agent-gx98rcf3rx)"
+            >
+              <Bot className="w-4 h-4 stroke-[2.5]" />
+              <span>AI Summarize</span>
+              <Sparkles className="w-3.5 h-3.5 text-black" />
+            </button>
             {access.canVersionUpload && (
               <button
                 onClick={() => setIsVersionOpen(true)}
