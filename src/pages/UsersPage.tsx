@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useDms } from '../contexts/DmsContext';
-import { Users, Fingerprint, ShieldCheck, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Users, Fingerprint, ShieldCheck, CheckCircle2, ArrowRight, UserPlus } from 'lucide-react';
 import { DepartmentBadge } from '../components/ui/Badges';
+import { AddOfficerModal } from '../components/modals/AddOfficerModal';
 
 export const UsersPage: React.FC = () => {
   const { users, currentUser, switchUser } = useDms();
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   return (
     <div className="space-y-6">
@@ -23,11 +25,23 @@ export const UsersPage: React.FC = () => {
           </p>
         </div>
 
-        <div className="text-xs font-mono bg-black text-white border-2 border-black px-3 py-1.5 rounded-xl flex items-center gap-2 shadow-[2px_2px_0px_#000000]">
-          <span className="w-2 h-2 rounded-full bg-[#64EE00]" />
-          <span>Active:</span>
-          <strong className="text-[#64EE00]">{currentUser?.fullName}</strong>
-          <span className="text-white/60">({currentUser?.role})</span>
+        <div className="flex items-center gap-3">
+          {currentUser?.role === 'ADMIN' && (
+            <button
+              onClick={() => setIsAddModalOpen(true)}
+              className="px-4 py-2 rounded-xl bg-[#64EE00] text-black font-mono text-xs font-extrabold border-2 border-black flex items-center gap-2 shadow-[3px_3px_0px_#000000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_#000000] transition"
+            >
+              <UserPlus className="w-4 h-4 text-black stroke-[2.5]" />
+              <span>PROVISION NEW OFFICER</span>
+            </button>
+          )}
+
+          <div className="text-xs font-mono bg-black text-white border-2 border-black px-3 py-1.5 rounded-xl flex items-center gap-2 shadow-[2px_2px_0px_#000000]">
+            <span className="w-2 h-2 rounded-full bg-[#64EE00]" />
+            <span>Active:</span>
+            <strong className="text-[#64EE00]">{currentUser?.fullName}</strong>
+            <span className="text-white/60">({currentUser?.role})</span>
+          </div>
         </div>
       </div>
 
@@ -116,6 +130,8 @@ export const UsersPage: React.FC = () => {
           );
         })}
       </div>
+
+      <AddOfficerModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} />
     </div>
   );
 };

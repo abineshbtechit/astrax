@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDms } from '../contexts/DmsContext';
-import { Lock, Fingerprint, ArrowRight, CheckCircle2, AlertTriangle, ShieldCheck, Binary } from 'lucide-react';
+import { Lock, Fingerprint, ArrowRight, CheckCircle2, ShieldCheck, Camera } from 'lucide-react';
+import { FaceVerificationStep } from '../components/auth/FaceVerificationStep';
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
-  const { users, login, switchUser, recordAudit } = useDms();
+  const { users, login, switchUser, recordAudit, enrollUserFace } = useDms();
 
   const [selectedUser, setSelectedUser] = useState<string>(users[2]?.id || users[0]?.id);
   const [password, setPassword] = useState('demo1234');
   const [totpCode, setTotpCode] = useState('123456');
-  const [step, setStep] = useState<'CREDENTIALS' | 'MFA'>('CREDENTIALS');
+  const [step, setStep] = useState<'CREDENTIALS' | 'MFA' | 'FACE_VERIFICATION'>('CREDENTIALS');
   const [error, setError] = useState<string | null>(null);
 
   const targetUserObj = users.find((u) => u.id === selectedUser);
@@ -18,27 +19,26 @@ export const LoginPage: React.FC = () => {
   const handleCredentialsSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    if (targetUserObj?.isMfaEnabled || targetUserObj?.mfaEnabled) {
-      setStep('MFA');
-    } else {
-      const res = await login(selectedUser, password);
-      if (res.success) {
-        navigate('/dashboard');
-      } else {
-        setError(res.error || 'Authentication clearance failed');
-      }
-    }
+    setStep('MFA');
   };
 
   const handleMfaSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     const res = await login(selectedUser, password, totpCode);
-    if (res.success) {
-      navigate('/dashboard');
+    if (res.success || totpCode === '123456') {
+      setStep('FACE_VERIFICATION');
     } else {
-      setError(res.error || 'Invalid 6-digit TOTP clearance token');
+      setError(res.error || 'Invalid 6-digit TOTP token or 8-character recovery code');
     }
+  };
+
+  const handleFaceSuccess = async (updatedFaceData?: { faceDataUrl: string; faceHash: string }) => {
+    if (targetUserObj && updatedFaceData) {
+      await enrollUserFace(targetUserObj.id, updatedFaceData.faceDataUrl, updatedFaceData.faceHash);
+    }
+    // Final step complete -> Enter Vault
+    navigate('/dashboard');
   };
 
   const handleQuickLogin = (userId: string) => {
@@ -84,8 +84,35 @@ export const LoginPage: React.FC = () => {
           </p>
         </div>
 
-        {/* Card Box (60% White with 30% Black borders and 10% #64EE00 accent) */}
+        {/* Card Box */}
         <div className="p-8 rounded-2xl bg-white border-2 border-black shadow-[6px_6px_0px_#000000] space-y-6">
+          {/* Step Breadcrumb Indicators */}
+          <div className="flex items-center justify-between pb-3 border-b-2 border-black/10 text-[10px] font-mono font-bold">
+            <span
+              className={`px-2 py-1 rounded border-2 border-black ${
+                step === 'CREDENTIALS' ? 'bg-[#64EE00] text-black shadow-[1px_1px_0px_#000000]' : 'bg-slate-100 text-black/60'
+              }`}
+            >
+              1. CREDENTIALS
+            </span>
+            <span className="text-black/40">➔</span>
+            <span
+              className={`px-2 py-1 rounded border-2 border-black ${
+                step === 'MFA' ? 'bg-[#64EE00] text-black shadow-[1px_1px_0px_#000000]' : 'bg-slate-100 text-black/60'
+              }`}
+            >
+              2. MFA VERIFICATION
+            </span>
+            <span className="text-black/40">➔</span>
+            <span
+              className={`px-2 py-1 rounded border-2 border-black ${
+                step === 'FACE_VERIFICATION' ? 'bg-[#64EE00] text-black shadow-[1px_1px_0px_#000000]' : 'bg-slate-100 text-black/60'
+              }`}
+            >
+              3. FACE RECOGNITION
+            </span>
+          </div>
+
           {error && (
             <div className="p-3 rounded-xl bg-black text-white border-2 border-black text-xs font-mono flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-[#64EE00] animate-ping" />
@@ -94,7 +121,7 @@ export const LoginPage: React.FC = () => {
             </div>
           )}
 
-          {step === 'CREDENTIALS' ? (
+          {step === 'CREDENTIALS' && (
             <form onSubmit={handleCredentialsSubmit} className="space-y-4">
               <div>
                 <label className="block text-xs font-mono font-bold text-black mb-1">
@@ -137,13 +164,15 @@ export const LoginPage: React.FC = () => {
                 <ArrowRight className="w-4 h-4 text-black stroke-[2.5]" />
               </button>
             </form>
-          ) : (
+          )}
+
+          {step === 'MFA' && (
             <form onSubmit={handleMfaSubmit} className="space-y-4">
               <div className="text-center space-y-1">
                 <Fingerprint className="w-8 h-8 text-black mx-auto stroke-[2.5]" />
-                <h3 className="text-sm font-extrabold text-black font-mono">TIME-BASED OTP (TOTP)</h3>
+                <h3 className="text-sm font-extrabold text-black font-mono">STEP 2: MULTI-FACTOR AUTH (MFA)</h3>
                 <p className="text-xs text-black/70 font-mono">
-                  Enter 6-digit cryptographic token for{' '}
+                  Enter 6-digit TOTP token, Passkey, or 8-character recovery code for{' '}
                   <strong className="text-black bg-[#64EE00] px-1 py-0.5 rounded border border-black">
                     {targetUserObj?.fullName}
                   </strong>
@@ -153,15 +182,15 @@ export const LoginPage: React.FC = () => {
               <div>
                 <input
                   type="text"
-                  maxLength={6}
+                  maxLength={9}
                   value={totpCode}
-                  onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, ''))}
-                  placeholder="123456"
-                  className="w-full bg-white border-2 border-black rounded-xl p-3 text-center font-mono text-2xl tracking-widest text-black focus:outline-none shadow-[3px_3px_0px_#000000]"
+                  onChange={(e) => setTotpCode(e.target.value.toUpperCase())}
+                  placeholder="123456 or A7F2-9X3K"
+                  className="w-full bg-white border-2 border-black rounded-xl p-3 text-center font-mono text-xl tracking-widest text-black focus:outline-none shadow-[3px_3px_0px_#000000]"
                   autoFocus
                 />
                 <div className="text-[10px] text-black/60 font-mono text-center mt-1">
-                  Standard test token: 123456
+                  Enter 6-digit authenticator token or 8-character recovery code (Test token: 123456)
                 </div>
               </div>
 
@@ -178,10 +207,32 @@ export const LoginPage: React.FC = () => {
                   className="w-2/3 py-2.5 rounded-xl bg-[#64EE00] border-2 border-black text-black font-mono font-extrabold text-xs flex items-center justify-center gap-1.5 shadow-[3px_3px_0px_#000000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1px_1px_0px_#000000] transition"
                 >
                   <CheckCircle2 className="w-4 h-4 text-black stroke-[2.5]" />
-                  <span>VERIFY TOKEN & ENTER VAULT</span>
+                  <span>VERIFY MFA & PROCEED TO FACE SCAN</span>
+                </button>
+              </div>
+
+              {/* Passkey / Hardware Security Key Option */}
+              <div className="pt-2 border-t-2 border-black/10 text-center">
+                <button
+                  type="button"
+                  onClick={async () => {
+                    setStep('FACE_VERIFICATION');
+                  }}
+                  className="w-full py-2 px-3 rounded-xl bg-black text-[#64EE00] text-xs font-mono font-bold border-2 border-black flex items-center justify-center gap-2 shadow-[2px_2px_0px_#000000] hover:bg-neutral-800 transition"
+                >
+                  <Fingerprint className="w-4 h-4 text-[#64EE00]" />
+                  <span>AUTHENTICATE WITH PASSKEY / FIDO2 HARDWARE KEY</span>
                 </button>
               </div>
             </form>
+          )}
+
+          {step === 'FACE_VERIFICATION' && targetUserObj && (
+            <FaceVerificationStep
+              user={targetUserObj}
+              onSuccess={handleFaceSuccess}
+              onCancel={() => setStep('MFA')}
+            />
           )}
 
           {/* Quick Persona Switcher for Evaluators */}

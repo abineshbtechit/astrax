@@ -86,6 +86,12 @@ export interface User {
   mfaEnabled: boolean;
   isMfaEnabled?: boolean;
   mfaSecret?: string;
+  backupCodes?: string[];
+  isMfaVerified?: boolean;
+  requireMfaOnFirstLogin?: boolean;
+  faceBiometricData?: string;
+  faceHash?: string;
+  isFaceEnrolled?: boolean;
   securityClearance: 'LEVEL_1' | 'LEVEL_2' | 'LEVEL_3' | 'TOP_SECRET';
   createdAt: string;
 }
