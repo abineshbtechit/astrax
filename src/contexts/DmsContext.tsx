@@ -37,6 +37,8 @@ import {
   verifyAuditChain as verifyAuditChainCrypto,
   generateDigitalSignature,
   verifyTotpCode,
+  createJwtToken,
+  verifyJwtToken,
 } from '../utils/crypto';
 
 export interface AccessEvaluation {
@@ -63,7 +65,7 @@ export interface DmsContextType {
   accessRequests: AccessRequest[];
   notifications: NotificationItem[];
   auditLogs: AuditLog[];
-  login: (username: string, password?: string, mfaCode?: string) => Promise<{ success: boolean; requiresMfa?: boolean; error?: string }>;
+  login: (identifier: string, password?: string, mfaCode?: string, role?: Role) => Promise<{ success: boolean; requiresMfa?: boolean; error?: string; user?: User }>;
   logout: () => void;
   switchUser: (userId: string) => void;
   evaluateDocumentAccess: (doc: DocumentItem, user?: User | null) => AccessEvaluation;
@@ -117,6 +119,7 @@ export interface DmsContextType {
   markAllNotificationsRead: () => void;
   toggleMfa: (enable: boolean, secret?: string, backupCodes?: string[]) => Promise<void>;
   addOfficer: (officerData: Partial<User>) => Promise<User>;
+  deleteOfficer: (userId: string) => Promise<void>;
   enrollUserFace: (userId: string, faceDataUrl: string, faceHash?: string) => Promise<void>;
   updateUserStatus: (userId: string, active: boolean, role?: Role, department?: Department) => Promise<void>;
   mongoStatus?: {
@@ -134,11 +137,16 @@ const DmsContext = createContext<DmsContextType | null>(null);
 export const DmsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Load state from local storage or defaults
   const [currentUser, setCurrentUser] = useState<User | null>(() => {
+    const token = localStorage.getItem('astrax_jwt_token');
     const saved = localStorage.getItem('astrax_current_user');
-    if (saved) {
-      try { return JSON.parse(saved); } catch (e) { /* ignore */ }
+    if (token && saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        /* ignore */
+      }
     }
-    return INITIAL_USERS[2]; // Default to Lead Investigator Zoya Khan
+    return null; // Requires 3-step authentication login
   });
 
   const [users, setUsers] = useState<User[]>(() => {
@@ -412,28 +420,64 @@ export const DmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   // Login
-  const login = async (username: string, _password?: string, mfaCode?: string) => {
-    const user = users.find((u) => u.username.toLowerCase() === username.toLowerCase());
+  const login = async (identifier: string, password?: string, mfaCode?: string, role?: Role) => {
+    const cleanId = identifier.trim().toLowerCase();
+    const user = users.find(
+      (u) =>
+        u.id.toLowerCase() === cleanId ||
+        u.username.toLowerCase() === cleanId ||
+        u.email.toLowerCase() === cleanId ||
+        u.badgeNumber.toLowerCase() === cleanId
+    );
+
     if (!user) {
       await appendAuditLog({
         action: 'LOGIN_FAILED',
         resourceType: 'AUTH',
-        resourceId: username,
-        resourceName: username,
+        resourceId: identifier,
+        resourceName: identifier,
         result: 'FAILED',
-        description: `Failed login attempt for non-existent username: ${username}`,
+        description: `Failed login attempt for unknown official identifier: ${identifier}`,
       });
-      return { success: false, error: 'Invalid badge ID or username credentials.' };
+      return { success: false, error: 'Invalid official cadre identifier (Badge ID, Username, or Email).' };
+    }
+
+    // Role verification
+    if (role && user.role !== role) {
+      await appendAuditLog({
+        action: 'LOGIN_FAILED',
+        resourceType: 'AUTH',
+        resourceId: user.id,
+        resourceName: user.fullName,
+        result: 'FAILED',
+        description: `Role mismatch attempt: User is ${user.role}, specified ${role}`,
+        actorOverride: user,
+      });
+      return { success: false, error: `Assigned role entitlement mismatch. Officer ${user.fullName} holds ${user.role} entitlement.` };
     }
 
     if (!user.active) {
-      return { success: false, error: 'Account has been disabled by security administrator.' };
+      return { success: false, error: 'Officer account has been suspended/deactivated by System Administrator.' };
+    }
+
+    // Password validation (demo fallback: demo1234 or officer2026)
+    if (password && password !== 'demo1234' && password !== 'officer2026') {
+      await appendAuditLog({
+        action: 'LOGIN_FAILED',
+        resourceType: 'AUTH',
+        resourceId: user.id,
+        resourceName: user.fullName,
+        result: 'FAILED',
+        description: `Invalid clearance password entered for user ${user.username}`,
+        actorOverride: user,
+      });
+      return { success: false, error: 'Invalid clearance access key password.' };
     }
 
     // Check MFA if enabled
     if (user.mfaEnabled || user.isMfaEnabled) {
       if (!mfaCode) {
-        return { success: false, requiresMfa: true };
+        return { success: false, requiresMfa: true, user };
       }
 
       const cleanCode = mfaCode.trim().toUpperCase();
@@ -468,17 +512,20 @@ export const DmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
 
     setCurrentUser(user);
+    const token = await createJwtToken(user);
+    localStorage.setItem('astrax_jwt_token', token);
+
     await appendAuditLog({
       action: 'LOGIN',
       resourceType: 'AUTH',
       resourceId: user.id,
       resourceName: user.fullName,
       result: 'SUCCESS',
-      description: `User authenticated successfully with role ${user.role} and MFA clearance verified`,
+      description: `User authenticated successfully with role ${user.role}, JWT token generated & MFA clearance verified`,
       actorOverride: user,
     });
 
-    return { success: true };
+    return { success: true, user };
   };
 
   // Logout
@@ -493,6 +540,7 @@ export const DmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         description: `User logged out cleanly`,
       });
     }
+    localStorage.removeItem('astrax_jwt_token');
     setCurrentUser(null);
   };
 
@@ -1620,6 +1668,30 @@ export const DmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
   };
 
+  // Delete Officer Account (Admin Only)
+  const deleteOfficer = async (userId: string) => {
+    if (!currentUser || currentUser.role !== 'ADMIN') {
+      throw new Error('Only System Administrators can delete officer accounts.');
+    }
+    if (currentUser.id === userId) {
+      throw new Error('Action Denied: You cannot delete your own active administrator account session.');
+    }
+
+    const targetUser = users.find((u) => u.id === userId);
+    setUsers((prev) => prev.filter((u) => u.id !== userId));
+
+    await appendAuditLog({
+      action: 'OFFICER_DELETED',
+      resourceType: 'USER',
+      resourceId: userId,
+      resourceName: targetUser?.fullName || userId,
+      result: 'SUCCESS',
+      description: `Permanently deleted officer account [Badge: ${targetUser?.badgeNumber || userId}] from personnel database`,
+    });
+
+    fetch(`/api/users/${userId}`, { method: 'DELETE' }).catch((e) => console.warn('User delete API notice:', e));
+  };
+
   // User status updates (Admin)
   const updateUserStatus = async (userId: string, active: boolean, role?: Role, department?: Department) => {
     if (!currentUser || currentUser.role !== 'ADMIN') throw new Error('Unauthorized');
@@ -1774,6 +1846,7 @@ export const DmsProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         markAllNotificationsRead,
         toggleMfa,
         addOfficer,
+        deleteOfficer,
         enrollUserFace,
         updateUserStatus,
         mongoStatus,

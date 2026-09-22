@@ -49,7 +49,7 @@ export const FaceVerificationStep: React.FC<FaceVerificationStepProps> = ({
         }
       } catch (err: any) {
         console.warn('Webcam access error:', err);
-        setCameraError('Webcam access denied or unavailable. You can proceed with simulated face verification.');
+        setCameraError('Webcam access denied or unavailable. A real live camera feed is strictly required for facial biometric authentication.');
       }
     }
 
@@ -80,32 +80,41 @@ export const FaceVerificationStep: React.FC<FaceVerificationStepProps> = ({
     }, 200);
 
     setTimeout(async () => {
-      // Capture frame from video or generate SVG avatar canvas snapshot
+      // Capture frame directly from active video element
       let imageDataUrl = '';
+      let hasLiveWebcamFrame = false;
+
       if (videoRef.current && canvasRef.current) {
         const video = videoRef.current;
         const canvas = canvasRef.current;
-        canvas.width = video.videoWidth || 320;
-        canvas.height = video.videoHeight || 240;
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-          imageDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+        if (video.videoWidth > 0 && video.videoHeight > 0) {
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            imageDataUrl = canvas.toDataURL('image/jpeg', 0.85);
+            hasLiveWebcamFrame = true;
+          }
         }
       }
 
-      if (!imageDataUrl) {
-        // Fallback snapshot data url
-        imageDataUrl = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="2"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></svg>`;
-      }
-
       setCapturedImage(imageDataUrl);
+      setIsScanning(false);
+
+      if (!hasLiveWebcamFrame || !imageDataUrl) {
+        setVerificationResult({
+          isMatch: false,
+          confidenceScore: 0,
+          message: 'Real webcam feed required. No live camera frame detected.',
+        });
+        return;
+      }
 
       const result = await compareFacialFeatures(imageDataUrl, user.faceBiometricData);
       const faceHash = await computeFaceImageHash(imageDataUrl);
 
       setVerificationResult(result);
-      setIsScanning(false);
 
       if (result.isMatch) {
         setTimeout(() => {
@@ -142,8 +151,8 @@ export const FaceVerificationStep: React.FC<FaceVerificationStepProps> = ({
       <div className="p-4 rounded-2xl bg-white border-2 border-black shadow-[4px_4px_0px_#000000] relative overflow-hidden space-y-3">
         {/* Camera Error Alert */}
         {cameraError && (
-          <div className="p-2.5 rounded-xl bg-amber-50 text-amber-900 border-2 border-black text-[11px] font-bold flex items-center gap-2">
-            <ShieldAlert className="w-4 h-4 text-amber-600 flex-shrink-0" />
+          <div className="p-2.5 rounded-xl bg-red-100 text-red-900 border-2 border-black text-[11px] font-bold flex items-center gap-2">
+            <ShieldAlert className="w-4 h-4 text-red-600 flex-shrink-0" />
             <span>{cameraError}</span>
           </div>
         )}

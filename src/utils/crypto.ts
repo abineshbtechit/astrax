@@ -270,7 +270,7 @@ export async function registerPasskey(user: { id: string; fullName: string; emai
 /**
  * WebAuthn / Passkey Authentication Verification
  */
-export async function authenticatePasskey(credentialId?: string): Promise<{ success: boolean; credentialId: string }> {
+export async function authenticatePasskey(credentialId?: string): Promise<{ success: boolean; credentialId: string; error?: string }> {
   if (window.PublicKeyCredential && typeof window.PublicKeyCredential === 'function') {
     try {
       const challenge = new Uint8Array(32);
@@ -293,12 +293,14 @@ export async function authenticatePasskey(credentialId?: string): Promise<{ succ
           .join('');
         return { success: true, credentialId: rawId };
       }
-    } catch (e) {
-      console.warn('Passkey verification bypassed or cancelled, engaging fallback:', e);
+      return { success: false, credentialId: '', error: 'Passkey security prompt was cancelled or dismissed.' };
+    } catch (e: any) {
+      console.warn('WebAuthn Passkey verification failed:', e);
+      return { success: false, credentialId: '', error: e?.message || 'Passkey authentication failed or cancelled by user.' };
     }
   }
 
-  return { success: true, credentialId: credentialId || 'PASSKEY-VERIFIED-HARDWARE' };
+  return { success: false, credentialId: '', error: 'WebAuthn hardware passkeys are not supported on this browser or platform.' };
 }
 
 /**
@@ -338,6 +340,59 @@ export async function compareFacialFeatures(
     message: `Facial biometric verified (${matchScore}% match with stored DB profile).`,
   };
 }
+
+/**
+ * Creates a signed JWT Session Token for an authenticated officer
+ */
+export async function createJwtToken(user: {
+  id: string;
+  username: string;
+  badgeNumber: string;
+  role: string;
+  department: string;
+}): Promise<string> {
+  const header = { alg: 'HS512', typ: 'JWT' };
+  const payload = {
+    sub: user.id,
+    username: user.username,
+    badgeNumber: user.badgeNumber,
+    role: user.role,
+    department: user.department,
+    mfaVerified: true,
+    faceVerified: true,
+    iat: Math.floor(Date.now() / 1000),
+    exp: Math.floor(Date.now() / 1000) + 86400, // 24 Hours
+  };
+
+  const encodedHeader = btoa(JSON.stringify(header));
+  const encodedPayload = btoa(JSON.stringify(payload));
+  const signature = await sha256String(`${encodedHeader}.${encodedPayload}.ASTRAX_JWT_SECRET_KEY_2026`);
+
+  return `${encodedHeader}.${encodedPayload}.${signature}`;
+}
+
+/**
+ * Verifies a JWT Session Token string
+ */
+export async function verifyJwtToken(token: string): Promise<{ isValid: boolean; payload?: any }> {
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) return { isValid: false };
+
+    const [header, payload, sig] = parts;
+    const expectedSig = await sha256String(`${header}.${payload}.ASTRAX_JWT_SECRET_KEY_2026`);
+    if (sig !== expectedSig) return { isValid: false };
+
+    const decodedPayload = JSON.parse(atob(payload));
+    const now = Math.floor(Date.now() / 1000);
+    if (decodedPayload.exp && decodedPayload.exp < now) return { isValid: false };
+
+    return { isValid: true, payload: decodedPayload };
+  } catch (e) {
+    return { isValid: false };
+  }
+}
+
 
 
 
