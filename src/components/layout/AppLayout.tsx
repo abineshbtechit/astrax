@@ -36,7 +36,7 @@ export const AppLayout: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#F2F4F7] text-[#0A0D14] flex relative selection:bg-[#64EE00] selection:text-black">
+    <div className="min-h-screen bg-white text-black flex relative selection:bg-[#64EE00] selection:text-black">
       {/* Sleek Floating Hover-Expanding Sidebar (Navigation Bar) */}
       <Sidebar
         onOpenSearch={() => setIsSearchOpen(true)}

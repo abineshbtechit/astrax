@@ -10,8 +10,6 @@ import {
   Plus,
   LogOut,
   Users,
-  Bot,
-  Sparkles,
 } from 'lucide-react';
 import { useDms } from '../../contexts/DmsContext';
 
@@ -69,7 +67,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onOpenSearch, onOpenQuickActio
       path: '/integrity-lab',
       icon: Binary,
       badge: tamperedDocsCount > 0 ? `${tamperedDocsCount}` : activeAlertsCount > 0 ? `${activeAlertsCount}` : undefined,
-      badgeColor: tamperedDocsCount > 0 ? 'bg-red-500 text-white' : 'bg-[#64EE00] text-black font-black',
+      badgeColor: tamperedDocsCount > 0 ? 'bg-black text-[#64EE00] font-black border border-[#64EE00]' : 'bg-[#64EE00] text-black font-black',
     },
     {
       id: 'settings',
@@ -159,40 +157,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ onOpenSearch, onOpenQuickActio
               ⌘K
             </kbd>
           </div>
-        </button>
-
-        {/* Azure AI Agent Chatbot Button */}
-        <button
-          onClick={onOpenAiChat}
-          className="flex items-center gap-3 w-full h-11 min-h-[44px] px-2.5 rounded-xl border border-[#64EE00]/50 bg-[#64EE00]/10 hover:bg-[#64EE00]/25 text-[#64EE00] transition group relative shadow-[0_0_15px_rgba(100,238,0,0.15)] cursor-pointer"
-          title="AstraX Azure AI Agent (gpt-5-mini) • PDF Summarizer"
-        >
-          <div className="w-7 h-7 rounded-lg bg-black border border-[#64EE00] flex items-center justify-center min-w-[28px] group-hover:scale-110 transition shadow-[0_0_8px_#64EE00]">
-            <Bot className="w-4 h-4 text-[#64EE00] stroke-[2.5]" />
-          </div>
-          <div
-            className={`flex items-center justify-between flex-1 overflow-hidden transition-all duration-300 ${
-              isHovered ? 'opacity-100 max-w-[160px]' : 'opacity-0 max-w-0 pointer-events-none'
-            }`}
-          >
-            <div className="flex flex-col text-left">
-              <span className="text-xs font-black text-white font-mono whitespace-nowrap flex items-center gap-1">
-                AI CHATBOT
-                <Sparkles className="w-3 h-3 text-[#64EE00]" />
-              </span>
-              <span className="text-[9px] font-mono text-[#64EE00] font-bold truncate">
-                Azure AI &bull; gpt-5-mini
-              </span>
-            </div>
-            <span className="text-[8px] font-mono font-black bg-[#64EE00] text-black px-1.5 py-0.5 rounded shadow-[1px_1px_0px_#FFFFFF]">
-              GPT-5
-            </span>
-          </div>
-
-          {/* Pulse dot when collapsed */}
-          {!isHovered && (
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#64EE00] shadow-[0_0_8px_#64EE00]" />
-          )}
         </button>
 
         {/* Divider */}

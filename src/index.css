@@ -10,11 +10,11 @@
 
   body {
     font-family: var(--font-sans);
-    background-color: #F2F4F7;
-    background-image: radial-gradient(#000000 0.75px, transparent 0.75px);
+    background-color: #FFFFFF;
+    background-image: radial-gradient(#000000 0.6px, transparent 0.6px);
     background-size: 24px 24px;
     background-position: 0 0;
-    color: #0A0D14;
+    color: #000000;
     overflow-x: hidden;
   }
 
@@ -29,9 +29,7 @@
 
 /* Custom Brutalist & Glassmorphic Utilities */
 .brutal-card {
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: #FFFFFF;
   border: 2px solid #000000;
   box-shadow: 4px 4px 0px #000000;
   border-radius: 18px;
@@ -109,6 +107,15 @@
 
 ::-webkit-scrollbar-thumb:hover {
   background: #64EE00;
+}
+
+/* Hide scrollbar utility */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 /* Document watermark utility */

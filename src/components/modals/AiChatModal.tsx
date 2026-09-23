@@ -11,13 +11,10 @@ import {
   Check,
   RefreshCw,
   Sliders,
-  ExternalLink,
   ShieldCheck,
-  AlertTriangle,
   Paperclip,
   Trash2,
   FileDown,
-  Info,
 } from 'lucide-react';
 import { DocumentItem } from '../../types';
 
@@ -47,7 +44,7 @@ export const AiChatModal: React.FC<AiChatModalProps> = ({
   initialDoc,
   initialPrompt,
 }) => {
-  const { documents, cases } = useDms();
+  const { documents } = useDms();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -142,7 +139,6 @@ export const AiChatModal: React.FC<AiChatModalProps> = ({
       };
       reader.readAsDataURL(file);
     } else {
-      // Plain text or markdown
       const reader = new FileReader();
       reader.onload = (ev) => {
         const text = (ev.target?.result as string) || '';
@@ -257,12 +253,13 @@ export const AiChatModal: React.FC<AiChatModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md p-2 sm:p-4 overflow-hidden font-mono select-none">
-      <div className="bg-[#0A0D14] border-2 border-black rounded-2xl w-full max-w-4xl h-[92vh] max-h-[880px] shadow-[8px_8px_0px_#64EE00] flex flex-col overflow-hidden text-white animate-in fade-in zoom-in-95 duration-200">
-        {/* Top Header Bar */}
-        <div className="p-3.5 sm:p-4 border-b-2 border-white/10 flex items-center justify-between bg-black/90 px-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-2 sm:p-4 font-mono select-none overflow-hidden">
+      <div className="bg-white border-2 border-black rounded-2xl w-full max-w-4xl h-[90vh] max-h-[850px] shadow-[8px_8px_0px_#000000] flex flex-col overflow-hidden text-black animate-in fade-in zoom-in-95 duration-200">
+        
+        {/* Top Header Bar - 30% Black */}
+        <div className="p-3.5 sm:p-4 border-b-2 border-black flex-shrink-0 flex items-center justify-between bg-black text-white px-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#64EE00] text-black border-2 border-black flex items-center justify-center shadow-[2px_2px_0px_#FFFFFF]">
+            <div className="w-10 h-10 rounded-xl bg-[#64EE00] text-black border-2 border-black flex items-center justify-center font-black shadow-[2px_2px_0px_#FFFFFF]">
               <Bot className="w-6 h-6 stroke-[2.5]" />
             </div>
             <div>
@@ -270,12 +267,12 @@ export const AiChatModal: React.FC<AiChatModalProps> = ({
                 <h2 className="text-sm sm:text-base font-black uppercase tracking-tight text-white flex items-center gap-1.5">
                   Astra<span className="text-[#64EE00]">X</span> AI Assistant
                 </h2>
-                <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-[#64EE00]/20 text-[#64EE00] border border-[#64EE00]/40 flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#64EE00] animate-pulse" />
+                <span className="text-[10px] px-2 py-0.5 rounded-md font-extrabold bg-[#64EE00] text-black border border-black flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-black animate-pulse" />
                   {AGENT_NAME}
                 </span>
               </div>
-              <p className="text-[11px] text-white/60 font-medium truncate max-w-md hidden sm:block">
+              <p className="text-[11px] text-white/70 font-medium truncate max-w-md hidden sm:block">
                 Azure AI Foundry Project • PDF & Evidentiary Summarizer
               </p>
             </div>
@@ -285,10 +282,10 @@ export const AiChatModal: React.FC<AiChatModalProps> = ({
             {/* Azure Key Settings Button */}
             <button
               onClick={() => setShowSettings(!showSettings)}
-              className={`p-2 rounded-xl border transition flex items-center gap-1 text-xs font-bold ${
+              className={`p-2 rounded-xl border-2 transition flex items-center gap-1 text-xs font-bold ${
                 showSettings || agentStatus.hasApiKey
-                  ? 'bg-white/10 border-white/30 text-white hover:bg-white/20'
-                  : 'bg-[#64EE00]/10 border-[#64EE00] text-[#64EE00] animate-pulse'
+                  ? 'bg-neutral-800 border-white text-white hover:bg-neutral-700'
+                  : 'bg-[#64EE00] border-black text-black animate-pulse font-black'
               }`}
               title="Azure AI Foundry Credentials & Key"
             >
@@ -301,7 +298,7 @@ export const AiChatModal: React.FC<AiChatModalProps> = ({
             {/* Clear conversation */}
             <button
               onClick={() => setMessages([])}
-              className="p-2 rounded-xl border border-white/20 bg-white/5 hover:bg-white/15 text-white/70 hover:text-white transition"
+              className="p-2 rounded-xl border-2 border-white/30 bg-neutral-900 hover:bg-white hover:text-black transition text-white"
               title="Clear Conversation"
             >
               <Trash2 className="w-4 h-4" />
@@ -310,7 +307,7 @@ export const AiChatModal: React.FC<AiChatModalProps> = ({
             {/* Close Button */}
             <button
               onClick={onClose}
-              className="p-2 rounded-xl border-2 border-white/20 bg-white/5 hover:bg-[#64EE00] hover:text-black hover:border-black text-white transition"
+              className="p-2 rounded-xl border-2 border-white bg-black hover:bg-[#64EE00] hover:text-black hover:border-black text-white transition font-bold"
               title="Close Chatbot"
             >
               <X className="w-4 h-4 stroke-[2.5]" />
@@ -320,15 +317,15 @@ export const AiChatModal: React.FC<AiChatModalProps> = ({
 
         {/* Settings Drawer (Azure Endpoint & Key Configuration) */}
         {showSettings && (
-          <div className="bg-black/95 border-b-2 border-[#64EE00] p-4 text-xs space-y-3 animate-in slide-in-from-top-2 duration-200">
+          <div className="bg-neutral-900 text-white border-b-2 border-black p-4 text-xs space-y-3 flex-shrink-0 animate-in slide-in-from-top-2 duration-200">
             <div className="flex items-center justify-between">
-              <span className="font-bold text-[#64EE00] flex items-center gap-1.5 text-xs">
+              <span className="font-extrabold text-[#64EE00] flex items-center gap-1.5 text-xs">
                 <ShieldCheck className="w-4 h-4" />
                 AZURE AI FOUNDRY AGENT CONFIGURATION
               </span>
               <button
                 onClick={() => setShowSettings(false)}
-                className="text-white/60 hover:text-white text-xs"
+                className="text-white/60 hover:text-white text-xs font-bold"
               >
                 Close ✕
               </button>
@@ -337,13 +334,13 @@ export const AiChatModal: React.FC<AiChatModalProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-[11px]">
               <div>
                 <label className="text-white/70 block mb-1 font-bold">PROJECT ENDPOINT</label>
-                <div className="p-2 rounded-lg bg-white/5 border border-white/10 text-white/90 truncate font-mono text-[10px]">
+                <div className="p-2 rounded-lg bg-black border border-neutral-700 text-white truncate font-mono text-[10px]">
                   {AZURE_ENDPOINT}
                 </div>
               </div>
               <div>
                 <label className="text-white/70 block mb-1 font-bold">TARGET AGENT</label>
-                <div className="p-2 rounded-lg bg-white/5 border border-white/10 text-[#64EE00] font-bold font-mono text-[11px]">
+                <div className="p-2 rounded-lg bg-black border border-neutral-700 text-[#64EE00] font-bold font-mono text-[11px]">
                   {AGENT_NAME} (v1)
                 </div>
               </div>
@@ -360,11 +357,11 @@ export const AiChatModal: React.FC<AiChatModalProps> = ({
                   value={apiKey}
                   onChange={(e) => setApiKey(e.target.value)}
                   placeholder="Paste Azure AI Project API Key or Bearer Token..."
-                  className="flex-1 bg-white/5 border border-white/20 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#64EE00]"
+                  className="flex-1 bg-black border-2 border-neutral-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-[#64EE00]"
                 />
                 <button
                   onClick={handleSaveApiKey}
-                  className="px-4 py-2 bg-[#64EE00] text-black font-black rounded-xl hover:bg-white transition text-xs"
+                  className="px-4 py-2 bg-[#64EE00] text-black font-black rounded-xl border-2 border-black hover:bg-white transition text-xs"
                 >
                   SAVE KEY
                 </button>
@@ -373,11 +370,11 @@ export const AiChatModal: React.FC<AiChatModalProps> = ({
           </div>
         )}
 
-        {/* Document Attachment & Vault Picker Bar */}
-        <div className="bg-black/40 border-b border-white/10 px-4 py-2.5 flex items-center justify-between gap-3 flex-wrap">
+        {/* Document Attachment & Vault Picker Bar - 30% Dark/Neutral surface */}
+        <div className="bg-neutral-100 border-b-2 border-black px-4 py-2.5 flex-shrink-0 flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-2 flex-1 min-w-[260px]">
-            <FileText className="w-4 h-4 text-[#64EE00] flex-shrink-0" />
-            <span className="text-[11px] font-bold text-white/70 whitespace-nowrap">DOCUMENT FOR ANALYSIS:</span>
+            <FileText className="w-4 h-4 text-black flex-shrink-0" />
+            <span className="text-[11px] font-black text-black whitespace-nowrap">DOCUMENT FOR ANALYSIS:</span>
 
             <select
               value={selectedDocId}
@@ -385,26 +382,26 @@ export const AiChatModal: React.FC<AiChatModalProps> = ({
                 setSelectedDocId(e.target.value);
                 setUploadedFile(null);
               }}
-              className="bg-white/10 border border-white/20 rounded-lg px-2 py-1 text-xs text-white focus:outline-none focus:border-[#64EE00] max-w-xs truncate"
+              className="bg-white border-2 border-black rounded-lg px-2 py-1 text-xs text-black font-bold focus:outline-none focus:border-[#64EE00] max-w-xs truncate"
             >
-              <option value="" className="bg-[#0A0D14] text-white">
+              <option value="" className="bg-white text-black font-medium">
                 -- Select from Vault Documents ({documents.length}) --
               </option>
               {documents.map((d) => (
-                <option key={d.id} value={d.id} className="bg-[#0A0D14] text-white">
+                <option key={d.id} value={d.id} className="bg-white text-black font-medium">
                   {d.caseNumber}: {d.documentName}
                 </option>
               ))}
             </select>
 
-            {/* Or custom uploaded file badge */}
+            {/* Custom uploaded file badge */}
             {uploadedFile && (
-              <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-[#64EE00]/20 border border-[#64EE00] text-[#64EE00] text-[11px] font-bold">
+              <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-[#64EE00] border-2 border-black text-black text-[11px] font-black">
                 <Paperclip className="w-3 h-3" />
                 <span className="truncate max-w-[140px]">{uploadedFile.name}</span>
                 <button
                   onClick={() => setUploadedFile(null)}
-                  className="hover:text-white ml-1"
+                  className="hover:text-red-600 ml-1 font-bold"
                   title="Remove upload"
                 >
                   ✕
@@ -423,10 +420,10 @@ export const AiChatModal: React.FC<AiChatModalProps> = ({
             />
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="px-2.5 py-1 rounded-lg border border-white/20 bg-white/5 hover:bg-white/15 text-white/80 hover:text-white text-xs font-bold flex items-center gap-1.5 transition"
+              className="px-2.5 py-1 rounded-lg border-2 border-black bg-white hover:bg-black hover:text-white text-black text-xs font-bold flex items-center gap-1.5 transition"
               title="Upload PDF or Text Document"
             >
-              <Upload className="w-3.5 h-3.5 text-[#64EE00]" />
+              <Upload className="w-3.5 h-3.5" />
               <span>Upload PDF</span>
             </button>
 
@@ -439,7 +436,7 @@ export const AiChatModal: React.FC<AiChatModalProps> = ({
                   )
                 }
                 disabled={isLoading}
-                className="px-2.5 py-1 rounded-lg bg-[#64EE00] text-black font-black text-xs flex items-center gap-1 hover:bg-white transition disabled:opacity-50"
+                className="px-2.5 py-1 rounded-lg bg-[#64EE00] text-black border-2 border-black font-black text-xs flex items-center gap-1 hover:bg-black hover:text-[#64EE00] transition disabled:opacity-50"
               >
                 <Sparkles className="w-3.5 h-3.5" />
                 <span>Summarize Report</span>
@@ -448,8 +445,8 @@ export const AiChatModal: React.FC<AiChatModalProps> = ({
           </div>
         </div>
 
-        {/* Chat Messages Canvas */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 select-text">
+        {/* Chat Messages Canvas - 60% White (Dominant) with min-h-0 overflow-y-auto */}
+        <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6 space-y-4 select-text bg-white">
           {messages.map((msg) => {
             const isUser = msg.role === 'user';
             return (
@@ -459,10 +456,10 @@ export const AiChatModal: React.FC<AiChatModalProps> = ({
               >
                 {/* Avatar */}
                 <div
-                  className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 text-xs font-bold border ${
+                  className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 text-xs font-black border-2 border-black ${
                     isUser
-                      ? 'bg-white text-black border-black shadow-[2px_2px_0px_#64EE00]'
-                      : 'bg-[#64EE00] text-black border-black shadow-[2px_2px_0px_#FFFFFF]'
+                      ? 'bg-black text-[#64EE00] shadow-[2px_2px_0px_#000000]'
+                      : 'bg-[#64EE00] text-black shadow-[2px_2px_0px_#000000]'
                   }`}
                 >
                   {isUser ? 'ME' : <Bot className="w-4 h-4 stroke-[2.5]" />}
@@ -470,20 +467,22 @@ export const AiChatModal: React.FC<AiChatModalProps> = ({
 
                 {/* Message Bubble */}
                 <div
-                  className={`rounded-2xl p-4 border text-xs sm:text-sm leading-relaxed ${
+                  className={`rounded-2xl p-4 border-2 border-black text-xs sm:text-sm leading-relaxed ${
                     isUser
-                      ? 'bg-[#18202F] text-white border-white/20'
-                      : 'bg-[#0E131F] text-white/90 border-white/15 shadow-[4px_4px_0px_rgba(0,0,0,0.5)]'
+                      ? 'bg-black text-white'
+                      : 'bg-neutral-50 text-black shadow-[3px_3px_0px_#000000]'
                   }`}
                 >
                   {/* Meta bar */}
-                  <div className="flex items-center justify-between gap-4 mb-2 pb-1.5 border-b border-white/10 text-[10px] text-white/50 font-mono">
+                  <div className={`flex items-center justify-between gap-4 mb-2 pb-1.5 border-b text-[10px] font-mono ${
+                    isUser ? 'border-white/20 text-white/70' : 'border-black/10 text-black/60'
+                  }`}>
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-white/80">
+                      <span className="font-extrabold">
                         {isUser ? 'INVESTIGATOR' : `AZURE AI: ${AGENT_NAME}`}
                       </span>
                       {msg.documentTitle && (
-                        <span className="text-[#64EE00] bg-[#64EE00]/10 px-1.5 py-0.5 rounded border border-[#64EE00]/30 font-bold truncate max-w-[200px]">
+                        <span className="bg-[#64EE00] text-black px-1.5 py-0.5 rounded border border-black font-black truncate max-w-[200px]">
                           📄 {msg.documentTitle}
                         </span>
                       )}
@@ -494,18 +493,18 @@ export const AiChatModal: React.FC<AiChatModalProps> = ({
                         <>
                           <button
                             onClick={() => handleCopy(msg.id, msg.content)}
-                            className="hover:text-white p-0.5"
+                            className="hover:text-[#64EE00] p-0.5 font-bold"
                             title="Copy Markdown"
                           >
                             {copiedId === msg.id ? (
-                              <Check className="w-3.5 h-3.5 text-[#64EE00]" />
+                              <Check className="w-3.5 h-3.5 text-black" />
                             ) : (
                               <Copy className="w-3.5 h-3.5" />
                             )}
                           </button>
                           <button
                             onClick={() => handleDownloadReport(msg.content)}
-                            className="hover:text-white p-0.5"
+                            className="hover:text-[#64EE00] p-0.5 font-bold"
                             title="Download Report as .md"
                           >
                             <FileDown className="w-3.5 h-3.5" />
@@ -516,18 +515,18 @@ export const AiChatModal: React.FC<AiChatModalProps> = ({
                   </div>
 
                   {/* Message Markdown rendering */}
-                  <div className="space-y-2 whitespace-pre-wrap font-sans text-slate-200">
+                  <div className={`space-y-2 whitespace-pre-wrap font-sans ${isUser ? 'text-white' : 'text-black'}`}>
                     {msg.content.split('\n').map((line, idx) => {
                       if (line.startsWith('### ')) {
                         return (
-                          <h3 key={idx} className="text-base font-black text-[#64EE00] mt-3 mb-1 font-mono">
+                          <h3 key={idx} className={`text-base font-black mt-3 mb-1 font-mono ${isUser ? 'text-[#64EE00]' : 'text-black underline'}`}>
                             {line.replace('### ', '')}
                           </h3>
                         );
                       }
                       if (line.startsWith('#### ')) {
                         return (
-                          <h4 key={idx} className="text-sm font-bold text-white mt-2 mb-1 font-mono">
+                          <h4 key={idx} className={`text-sm font-bold mt-2 mb-1 font-mono ${isUser ? 'text-white' : 'text-black'}`}>
                             {line.replace('#### ', '')}
                           </h4>
                         );
@@ -535,14 +534,14 @@ export const AiChatModal: React.FC<AiChatModalProps> = ({
                       if (line.startsWith('- ')) {
                         return (
                           <div key={idx} className="flex items-start gap-2 pl-2">
-                            <span className="text-[#64EE00] font-mono">&bull;</span>
+                            <span className="font-mono font-bold text-[#64EE00]">&bull;</span>
                             <span className="flex-1">{line.replace('- ', '')}</span>
                           </div>
                         );
                       }
                       if (line.startsWith('> ')) {
                         return (
-                          <blockquote key={idx} className="border-l-2 border-[#64EE00] pl-3 py-1 bg-white/5 my-1 text-xs text-white/80 italic">
+                          <blockquote key={idx} className="border-l-4 border-black pl-3 py-1 bg-black/5 my-1 text-xs italic font-medium">
                             {line.replace('> ', '')}
                           </blockquote>
                         );
@@ -557,16 +556,16 @@ export const AiChatModal: React.FC<AiChatModalProps> = ({
 
           {isLoading && (
             <div className="flex gap-3 max-w-[85%] mr-auto items-center">
-              <div className="w-8 h-8 rounded-xl bg-[#64EE00] text-black border-2 border-black flex items-center justify-center">
+              <div className="w-8 h-8 rounded-xl bg-[#64EE00] text-black border-2 border-black flex items-center justify-center font-bold">
                 <RefreshCw className="w-4 h-4 animate-spin stroke-[2.5]" />
               </div>
-              <div className="rounded-2xl p-4 bg-[#0E131F] border border-[#64EE00]/30 text-xs text-white/80 flex items-center gap-3">
+              <div className="rounded-2xl p-4 bg-neutral-100 border-2 border-black text-xs text-black font-mono flex items-center gap-3 shadow-[3px_3px_0px_#000000]">
                 <div className="flex gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-[#64EE00] animate-bounce" />
-                  <span className="w-2 h-2 rounded-full bg-[#64EE00] animate-bounce delay-100" />
-                  <span className="w-2 h-2 rounded-full bg-[#64EE00] animate-bounce delay-200" />
+                  <span className="w-2 h-2 rounded-full bg-black animate-bounce" />
+                  <span className="w-2 h-2 rounded-full bg-black animate-bounce delay-100" />
+                  <span className="w-2 h-2 rounded-full bg-black animate-bounce delay-200" />
                 </div>
-                <span className="font-mono text-[11px] text-[#64EE00]">
+                <span className="font-bold text-black">
                   Querying Azure AI Agent ({AGENT_NAME})...
                 </span>
               </div>
@@ -576,16 +575,16 @@ export const AiChatModal: React.FC<AiChatModalProps> = ({
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Quick Suggestion Chips */}
-        <div className="px-4 py-2 bg-black/60 border-t border-white/10 flex items-center gap-2 overflow-x-auto text-[11px] no-scrollbar">
-          <span className="text-white/40 text-[10px] font-bold whitespace-nowrap">QUICK PROMPTS:</span>
+        {/* Quick Suggestion Chips - flex-shrink-0 */}
+        <div className="px-4 py-2.5 bg-neutral-50 border-t border-neutral-200 flex-shrink-0 flex items-center gap-2 overflow-x-auto text-[11px] no-scrollbar">
+          <span className="text-black font-black text-[10px] whitespace-nowrap">QUICK PROMPTS:</span>
           <button
             onClick={() =>
               handleSendMessage(
                 'Generate an executive summary of this report with chronological investigation points.'
               )
             }
-            className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/15 border border-white/15 text-white/80 whitespace-nowrap transition hover:border-[#64EE00] hover:text-[#64EE00]"
+            className="px-2.5 py-1 rounded-lg bg-white border-2 border-black text-black font-bold whitespace-nowrap transition hover:bg-[#64EE00] hover:text-black"
           >
             📋 Executive Summary
           </button>
@@ -595,7 +594,7 @@ export const AiChatModal: React.FC<AiChatModalProps> = ({
                 'Verify Indian Evidence Act Section 65B and Bharatiya Sakshya Adhiniyam compliance for this digital evidence.'
               )
             }
-            className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/15 border border-white/15 text-white/80 whitespace-nowrap transition hover:border-[#64EE00] hover:text-[#64EE00]"
+            className="px-2.5 py-1 rounded-lg bg-white border-2 border-black text-black font-bold whitespace-nowrap transition hover:bg-[#64EE00] hover:text-black"
           >
             ⚖️ Section 65B Compliance
           </button>
@@ -605,7 +604,7 @@ export const AiChatModal: React.FC<AiChatModalProps> = ({
                 'Extract all penal code sections, FIR references, and statutory legal charges mentioned.'
               )
             }
-            className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/15 border border-white/15 text-white/80 whitespace-nowrap transition hover:border-[#64EE00] hover:text-[#64EE00]"
+            className="px-2.5 py-1 rounded-lg bg-white border-2 border-black text-black font-bold whitespace-nowrap transition hover:bg-[#64EE00] hover:text-black"
           >
             ⚖️ Extract Penal Codes (IPC/BNS)
           </button>
@@ -615,20 +614,20 @@ export const AiChatModal: React.FC<AiChatModalProps> = ({
                 'List all suspects, witnesses, and timestamps identified in this document.'
               )
             }
-            className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/15 border border-white/15 text-white/80 whitespace-nowrap transition hover:border-[#64EE00] hover:text-[#64EE00]"
+            className="px-2.5 py-1 rounded-lg bg-white border-2 border-black text-black font-bold whitespace-nowrap transition hover:bg-[#64EE00] hover:text-black"
           >
             🔍 Suspects & Timeline
           </button>
         </div>
 
-        {/* Input Bar */}
-        <div className="p-3 sm:p-4 bg-black border-t-2 border-white/10">
+        {/* Input Bar - 60% White / 30% Black / 10% #64EE00 Accent */}
+        <div className="p-3 sm:p-4 bg-white flex-shrink-0">
           <form
             onSubmit={(e) => {
               e.preventDefault();
               handleSendMessage();
             }}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2.5"
           >
             <div className="relative flex-1">
               <input
@@ -641,28 +640,29 @@ export const AiChatModal: React.FC<AiChatModalProps> = ({
                     : 'Ask Azure AI Agent to analyze legal records, summarize reports, or draft legal queries...'
                 }
                 disabled={isLoading}
-                className="w-full bg-[#121826] border-2 border-white/20 rounded-xl px-4 py-3 text-xs sm:text-sm text-white placeholder-white/40 focus:outline-none focus:border-[#64EE00] transition pr-10 font-mono"
+                className="w-full bg-neutral-50 border-2 border-black rounded-xl px-4 py-3 text-xs sm:text-sm text-black placeholder-neutral-500 focus:outline-none focus:bg-white focus:ring-2 focus:ring-[#64EE00] transition pr-10 font-mono font-bold"
               />
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-[#64EE00] transition"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-black hover:text-[#64EE00] transition p-1 font-bold"
                 title="Attach Document or PDF"
               >
-                <Paperclip className="w-4 h-4" />
+                <Paperclip className="w-4 h-4 stroke-[2.5]" />
               </button>
             </div>
 
             <button
               type="submit"
               disabled={isLoading || !input.trim()}
-              className="px-5 py-3 rounded-xl bg-[#64EE00] hover:bg-white text-black font-black text-xs sm:text-sm flex items-center gap-2 transition disabled:opacity-40 disabled:cursor-not-allowed shadow-[2px_2px_0px_#FFFFFF]"
+              className="px-5 py-3 rounded-xl bg-[#64EE00] text-black font-black text-xs sm:text-sm flex items-center gap-2 border-2 border-black shadow-[3px_3px_0px_#000000] hover:bg-black hover:text-[#64EE00] active:translate-x-[1px] active:translate-y-[1px] active:shadow-[1px_1px_0px_#000000] transition cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <span>SEND</span>
               <Send className="w-4 h-4 stroke-[3]" />
             </button>
           </form>
         </div>
+
       </div>
     </div>
   );

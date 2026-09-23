@@ -1,26 +1,21 @@
 import React, { useState } from 'react';
 import { useDms } from '../../contexts/DmsContext';
 import {
-  Shield,
   Search,
   Bell,
   UserCheck,
   ChevronDown,
   AlertTriangle,
-  Lock,
-  ExternalLink,
   KeyRound,
   LogOut,
   Sliders,
-  Check,
   Bot,
-  Sparkles,
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { triggerAiChat } from './AppLayout';
 
 export const Header: React.FC<{ onOpenSearch: () => void }> = ({ onOpenSearch }) => {
-  const { currentUser, users, switchUser, notifications, markNotificationRead, markAllNotificationsRead, alerts, logout, mongoStatus } = useDms();
+  const { currentUser, notifications, markNotificationRead, markAllNotificationsRead, alerts, logout, mongoStatus } = useDms();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showNotifMenu, setShowNotifMenu] = useState(false);
   const navigate = useNavigate();
@@ -29,16 +24,16 @@ export const Header: React.FC<{ onOpenSearch: () => void }> = ({ onOpenSearch })
   const activeAlerts = alerts.filter((a) => a.status === 'ACTIVE');
 
   return (
-    <header className="h-16 bg-slate-900/90 backdrop-blur border-b border-slate-800 px-4 md:px-6 flex items-center justify-between sticky top-0 z-30">
+    <header className="h-16 bg-white border-b-2 border-black px-4 md:px-6 flex items-center justify-between sticky top-0 z-30 shadow-sm">
       {/* Search trigger */}
       <div className="flex items-center gap-3 w-1/3">
         <button
           onClick={onOpenSearch}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-950/80 border border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700 transition w-full max-w-sm text-sm group"
+          className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white border-2 border-black text-black hover:bg-neutral-50 transition w-full max-w-sm text-sm group"
         >
-          <Search className="w-4 h-4 text-slate-500 group-hover:text-cyan-400 transition" />
-          <span className="flex-1 text-left truncate">Search cases, documents, SHA-256...</span>
-          <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-[10px] font-mono bg-slate-800 text-slate-400 rounded border border-slate-700">
+          <Search className="w-4 h-4 text-black group-hover:text-black transition" />
+          <span className="flex-1 text-left truncate font-medium text-black">Search cases, documents, SHA-256...</span>
+          <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-[10px] font-mono bg-black text-white rounded font-bold">
             ⌘K
           </kbd>
         </button>
@@ -48,17 +43,17 @@ export const Header: React.FC<{ onOpenSearch: () => void }> = ({ onOpenSearch })
       <div className="flex items-center gap-3">
         {/* Database Status Indicator */}
         <div
-          className="hidden xl:flex items-center gap-2 px-2.5 py-1 rounded-md text-xs font-mono bg-slate-950/80 border border-slate-800"
+          className="hidden xl:flex items-center gap-2 px-2.5 py-1 rounded-md text-xs font-mono bg-black text-white border-2 border-black"
           title={mongoStatus?.message || 'Database status'}
         >
           <span
             className={`w-2 h-2 rounded-full ${
               mongoStatus?.connected
-                ? 'bg-emerald-400 shadow-[0_0_8px_#34d399]'
-                : 'bg-amber-400'
+                ? 'bg-[#64EE00]'
+                : 'bg-white'
             }`}
           />
-          <span className={mongoStatus?.connected ? 'text-emerald-400' : 'text-slate-400'}>
+          <span className="text-white font-bold">
             {mongoStatus?.connected
               ? (mongoStatus?.provider === 'AZURE_COSMOS_DB' ? 'AZURE COSMOS DB: ONLINE' : 'MONGODB: ONLINE')
               : (mongoStatus?.provider === 'AZURE_COSMOS_DB' ? 'AZURE COSMOS DB: READY' : 'MONGODB: READY')}
@@ -68,69 +63,69 @@ export const Header: React.FC<{ onOpenSearch: () => void }> = ({ onOpenSearch })
         {/* Security Alert Beacon */}
         <Link
           to="/security"
-          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-mono font-medium border transition ${
+          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-mono font-bold border-2 transition ${
             activeAlerts.length > 0
-              ? 'bg-rose-500/10 text-rose-400 border-rose-500/30 animate-pulse hover:bg-rose-500/20'
-              : 'bg-slate-800/60 text-slate-400 border-slate-700 hover:text-slate-300'
+              ? 'bg-[#64EE00] text-black border-black animate-pulse'
+              : 'bg-white text-black border-black hover:bg-neutral-100'
           }`}
           title="Security Threats & Alarms"
         >
-          <AlertTriangle className={`w-3.5 h-3.5 ${activeAlerts.length > 0 ? 'text-rose-400' : 'text-slate-400'}`} />
+          <AlertTriangle className="w-3.5 h-3.5 text-black" />
           <span>{activeAlerts.length} ALERTS</span>
         </Link>
 
         {/* MFA status pill */}
         <Link
           to="/settings"
-          className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-mono bg-slate-800/80 border border-slate-700 text-slate-300 hover:border-indigo-500/40 transition"
+          className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-mono bg-white border-2 border-black text-black hover:bg-neutral-100 transition font-bold"
           title="Multi-Factor Authentication Status"
         >
-          <KeyRound className="w-3.5 h-3.5 text-indigo-400" />
+          <KeyRound className="w-3.5 h-3.5 text-black" />
           <span>MFA: {currentUser?.mfaEnabled ? 'ENFORCED' : 'OPTIONAL'}</span>
         </Link>
 
         {/* Azure AI Agent Chatbot Trigger */}
         <button
           onClick={() => triggerAiChat()}
-          className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-mono font-bold bg-[#64EE00]/10 text-[#64EE00] border border-[#64EE00]/40 hover:bg-[#64EE00]/20 transition cursor-pointer"
-          title="Open Azure AI Chatbot (hungry-agent-gx98rcf3rx)"
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-mono font-black bg-[#64EE00] text-black border-2 border-black hover:translate-y-[-1px] transition cursor-pointer"
+          title="Open Azure AI Chatbot"
         >
-          <Bot className="w-3.5 h-3.5 text-[#64EE00]" />
+          <Bot className="w-3.5 h-3.5 text-black" />
           <span>AI AGENT</span>
-          <span className="w-1.5 h-1.5 rounded-full bg-[#64EE00] animate-pulse" />
+          <span className="w-1.5 h-1.5 rounded-full bg-black animate-pulse" />
         </button>
 
         {/* Notifications Popover */}
         <div className="relative">
           <button
             onClick={() => setShowNotifMenu(!showNotifMenu)}
-            className="relative p-2 rounded-lg bg-slate-800/60 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/60 transition"
+            className="relative p-2 rounded-lg bg-white hover:bg-neutral-100 text-black border-2 border-black transition"
             title="Notifications"
           >
-            <Bell className="w-4 h-4" />
+            <Bell className="w-4 h-4 text-black" />
             {unreadNotifs.length > 0 && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-cyan-500 text-slate-950 font-bold text-[10px] rounded-full flex items-center justify-center">
+              <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#64EE00] text-black font-black text-[10px] rounded-full border border-black flex items-center justify-center">
                 {unreadNotifs.length}
               </span>
             )}
           </button>
 
           {showNotifMenu && (
-            <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl z-50 overflow-hidden">
-              <div className="p-3 border-b border-slate-800 flex items-center justify-between bg-slate-950/60">
-                <span className="text-xs font-bold font-mono tracking-wider text-slate-300">SECURITY NOTIFICATIONS</span>
+            <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white border-2 border-black rounded-xl shadow-[4px_4px_0px_#000000] z-50 overflow-hidden">
+              <div className="p-3 border-b-2 border-black flex items-center justify-between bg-black text-white">
+                <span className="text-xs font-bold font-mono tracking-wider text-white">SECURITY NOTIFICATIONS</span>
                 {unreadNotifs.length > 0 && (
                   <button
                     onClick={markAllNotificationsRead}
-                    className="text-[11px] text-cyan-400 hover:underline"
+                    className="text-[11px] text-[#64EE00] hover:underline font-bold"
                   >
-                    Mark all as read
+                    Mark all read
                   </button>
                 )}
               </div>
-              <div className="max-h-80 overflow-y-auto divide-y divide-slate-800/60">
+              <div className="max-h-80 overflow-y-auto divide-y divide-black/10">
                 {notifications.length === 0 ? (
-                  <div className="p-6 text-center text-xs text-slate-500">No recent notifications</div>
+                  <div className="p-6 text-center text-xs text-black/60 font-mono">No recent notifications</div>
                 ) : (
                   notifications.slice(0, 6).map((n) => (
                     <div
@@ -142,26 +137,26 @@ export const Header: React.FC<{ onOpenSearch: () => void }> = ({ onOpenSearch })
                           setShowNotifMenu(false);
                         }
                       }}
-                      className={`p-3 text-xs cursor-pointer hover:bg-slate-800/50 transition ${
-                        !n.read ? 'bg-slate-800/25 border-l-2 border-cyan-400' : ''
+                      className={`p-3 text-xs cursor-pointer hover:bg-neutral-50 transition ${
+                        !n.read ? 'bg-[#64EE00]/10 border-l-4 border-black' : ''
                       }`}
                     >
                       <div className="flex items-start justify-between gap-2 mb-1">
-                        <span className="font-semibold text-slate-200">{n.title}</span>
-                        <span className="text-[10px] text-slate-500 whitespace-nowrap">
+                        <span className="font-bold text-black">{n.title}</span>
+                        <span className="text-[10px] text-black/60 font-mono whitespace-nowrap">
                           {new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       </div>
-                      <p className="text-slate-400 leading-relaxed text-[11px]">{n.message}</p>
+                      <p className="text-black/80 leading-relaxed text-[11px]">{n.message}</p>
                     </div>
                   ))
                 )}
               </div>
-              <div className="p-2 border-t border-slate-800 bg-slate-950/40 text-center">
+              <div className="p-2 border-t-2 border-black bg-neutral-50 text-center">
                 <Link
                   to="/notifications"
                   onClick={() => setShowNotifMenu(false)}
-                  className="text-xs text-slate-400 hover:text-cyan-400 font-medium"
+                  className="text-xs text-black hover:text-[#64EE00] font-bold font-mono"
                 >
                   View All Notifications →
                 </Link>
@@ -174,58 +169,55 @@ export const Header: React.FC<{ onOpenSearch: () => void }> = ({ onOpenSearch })
         <div className="relative">
           <button
             onClick={() => setShowUserMenu(!showUserMenu)}
-            className="flex items-center gap-2.5 p-1.5 pl-2.5 pr-2 rounded-lg bg-slate-800/80 hover:bg-slate-800 border border-slate-700 transition"
+            className="flex items-center gap-2.5 p-1.5 pl-2.5 pr-2 rounded-lg bg-white hover:bg-neutral-100 border-2 border-black transition"
           >
-            <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-cyan-600 to-indigo-600 flex items-center justify-center text-white text-xs font-bold font-mono">
+            <div className="w-7 h-7 rounded-full bg-black text-[#64EE00] flex items-center justify-center text-xs font-black font-mono border border-black">
               {currentUser?.fullName.charAt(0) || 'U'}
             </div>
             <div className="text-left hidden md:block">
-              <div className="text-xs font-semibold text-slate-200 leading-tight truncate max-w-[130px]">
+              <div className="text-xs font-bold text-black leading-tight truncate max-w-[130px]">
                 {currentUser?.fullName}
               </div>
-              <div className="text-[10px] font-mono text-cyan-400 leading-tight">
+              <div className="text-[10px] font-mono text-black/70 leading-tight font-semibold">
                 {currentUser?.department} • {currentUser?.role.replace('_', ' ')}
               </div>
             </div>
-            <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+            <ChevronDown className="w-3.5 h-3.5 text-black" />
           </button>
 
           {showUserMenu && (
-            <div className="absolute right-0 mt-2 w-80 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl z-50 overflow-hidden divide-y divide-slate-800">
+            <div className="absolute right-0 mt-2 w-80 bg-white border-2 border-black rounded-xl shadow-[4px_4px_0px_#000000] z-50 overflow-hidden">
               {/* Active user details */}
-              <div className="p-3.5 bg-slate-950/80">
-                <div className="text-xs text-slate-400 font-mono">ACTIVE CREDENTIALS</div>
-                <div className="text-sm font-bold text-slate-100 mt-0.5">{currentUser?.fullName}</div>
-                <div className="text-xs font-mono text-cyan-400">{currentUser?.email}</div>
+              <div className="p-3.5 bg-black text-white border-b-2 border-black">
+                <div className="text-xs text-[#64EE00] font-mono font-bold">ACTIVE CREDENTIALS</div>
+                <div className="text-sm font-extrabold text-white mt-0.5">{currentUser?.fullName}</div>
+                <div className="text-xs font-mono text-white/80">{currentUser?.email}</div>
                 <div className="flex items-center gap-2 mt-2">
-                  <span className="px-2 py-0.5 text-[10px] font-mono bg-slate-800 text-slate-300 rounded border border-slate-700">
+                  <span className="px-2 py-0.5 text-[10px] font-mono bg-white text-black font-bold rounded border border-black">
                     Badge: {currentUser?.badgeNumber}
                   </span>
-                  <span className="px-2 py-0.5 text-[10px] font-mono bg-indigo-500/10 text-indigo-300 rounded border border-indigo-500/30">
+                  <span className="px-2 py-0.5 text-[10px] font-mono bg-[#64EE00] text-black font-black rounded border border-black">
                     {currentUser?.securityClearance}
                   </span>
                 </div>
               </div>
 
-                </div>
-              </div>
-
               {/* User actions */}
-              <div className="p-1.5 bg-slate-950/50">
+              <div className="p-1.5 bg-white">
                 <Link
                   to="/profile"
                   onClick={() => setShowUserMenu(false)}
-                  className="w-full flex items-center gap-2 px-2.5 py-1.5 text-xs text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition"
+                  className="w-full flex items-center gap-2 px-2.5 py-1.5 text-xs text-black hover:bg-neutral-100 rounded-lg transition font-medium"
                 >
-                  <UserCheck className="w-3.5 h-3.5 text-slate-400" />
+                  <UserCheck className="w-3.5 h-3.5 text-black" />
                   <span>My Profile & Clearance</span>
                 </Link>
                 <Link
                   to="/settings"
                   onClick={() => setShowUserMenu(false)}
-                  className="w-full flex items-center gap-2 px-2.5 py-1.5 text-xs text-slate-300 hover:bg-slate-800 hover:text-white rounded-lg transition"
+                  className="w-full flex items-center gap-2 px-2.5 py-1.5 text-xs text-black hover:bg-neutral-100 rounded-lg transition font-medium"
                 >
-                  <Sliders className="w-3.5 h-3.5 text-slate-400" />
+                  <Sliders className="w-3.5 h-3.5 text-black" />
                   <span>Security & MFA Settings</span>
                 </Link>
                 <button
@@ -234,7 +226,7 @@ export const Header: React.FC<{ onOpenSearch: () => void }> = ({ onOpenSearch })
                     setShowUserMenu(false);
                     navigate('/login');
                   }}
-                  className="w-full flex items-center gap-2 px-2.5 py-1.5 text-xs text-rose-400 hover:bg-rose-500/10 rounded-lg transition mt-0.5"
+                  className="w-full flex items-center gap-2 px-2.5 py-1.5 text-xs text-black hover:bg-black hover:text-white rounded-lg transition mt-0.5 font-bold"
                 >
                   <LogOut className="w-3.5 h-3.5" />
                   <span>Sign Out Session</span>
